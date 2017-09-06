@@ -25,29 +25,29 @@ class Actor {
 	  }
     this.pos = pos;
     this.size = size;
-    this.speed = speed;    
+    this.speed = speed;
   }
-  
+
   act() {
-    
+
   }
-  
+
   get left() {
     return this.pos.x;
   }
-  
+
   get top() {
     return this.pos.y;
   }
-  
+
   get right() {
     return this.pos.x + this.size.x;
   }
-  
+
   get bottom() {
     return this.pos.y + this.size.y;
   }
-  
+
   get type() {
     return 'actor';
   }
@@ -55,20 +55,22 @@ class Actor {
   isIntersect(actor) {
 		if (!(actor instanceof Actor)) {
 		  throw new Error('В метод isIntersect можно передавать только объект типа Actor');
-		} 
+		}
 
 		if (actor === this) {
       return false;
-    }   	
+    }
 
-    if (actor.left > this.right || actor.right < this.left || actor.top > this.bottom || actor.bottom < this.top) {    	
-    	return false;    	
-    } 
+    // Дальнейшую логику нужно сократить.
+    // Алгоритм следующий: если переданный объект выше, ниже, левее или правее, то они не пересекается
+    if (actor.left > this.right || actor.right < this.left || actor.top > this.bottom || actor.bottom < this.top) {
+    	return false;
+    }
 
     if ((actor.left === this.right) || (actor.top === this.bottom) || (actor.right === this.left) || (actor.bottom === this.top)) {
     	return false;
     }
-		
+
 		if ((actor.size.x < 0) || (actor.size.y < 0)) {
     	return false;
     }
@@ -81,32 +83,34 @@ class Actor {
     	if (actor.top < this.bottom || actor.bottom > this.top) {
     		return true;
     	}
-    } 
+    }
 
     if (actor.right > this.left) {
     	if (actor.top < this.bottom || actor.bottom > this.top) {
     		return true;
     	}
-    } 
+    }
 
     if (actor.top < this.bottom) {
     	if (actor.left < this.right || actor.right > this.left) {
     		return true;
     	}
-    } 
+    }
 
     if (actor.bottom > this.top) {
     	if (actor.left < this.right || actor.right > this.left) {
     		return true;
     	}
-    }     
+    }
   }
 }
 
 class Level {
   constructor(grid = [], actors = []) {
+    // тут нужно создать копии массивов, чтобы поля объекта нельзя было изменить из вне
     this.grid = grid;
     this.actors = actors;
+    // тут нлучше исопльзовать метод find
     for (const item of actors) {
       if (item.type === 'player') {
         this.player = item;
@@ -114,6 +118,7 @@ class Level {
       }
     }
     this.height = grid.length;
+    // тут лучше Math.max + map
     this.width = 0;
     if (grid.length !== 0) {
       for (const gridRow of this.grid) {
@@ -125,29 +130,34 @@ class Level {
     this.status = null;
     this.finishDelay = 1;
   }
-  
-  
-  
+
+
+
   isFinished() {
+    // если выражение в if равно true или false то if обычно лучше не писать
+    // достаточно return <expr>
     if ((this.status !== null) && (this.finishDelay < 0)) {
       return true;
     }
     return false;
   }
-  
+
   actorAt(actor) {
   	if (!(actor instanceof Actor) || typeof actor === 'undefined') {
 		  throw new Error('В метод actorAt можно передавать только объект типа Actor');
-		} 
-		
+		}
+
+    // конструкторе это поле обязательно запоняется
 		if (typeof this.grid === 'undefined') {
 		  return undefined;
 		}
-		
+
+    // зачем эта проверка?
 		if (this.actors.length === 1) {
 		  return undefined;
 		}
-		
+
+    // здесь достаточно return + .find
 		for (const item of this.actors) {
 		  if (actor.isIntersect(item)) {
 		    return item;
@@ -155,28 +165,30 @@ class Level {
 		}
 		return undefined;
   }
-  
+
   obstacleAt(pos, size) {
     if (!(pos instanceof Vector) || !(size instanceof Vector)) {
 		  throw new Error('В метод obstacleAt можно передавать только объекты типа Vector');
 		}
-		
+
 		const x1 = Math.floor(pos.x);
 		const y1 = Math.floor(pos.y);
 		const x2 = Math.ceil(pos.x + size.x);
 		const y2 = Math.ceil(pos.y + size.y);
-		
+
 		if (x1 < 0 || x2 > this.width || y1 < 0) {
 		  return 'wall';
 		}
-		
+
 		if (y2 > this.height) {
 		  return 'lava';
 		}
-		
-		
+
+
 		for (let row = y1; row < y2; row++) {
 		  for (let cell = x1; cell < x2; cell++) {
+            // здесь можно просто if (this.grid[row][cell])
+            // а ещё лучше записать в this.grid[row][cell] в переменную
 		    if (typeof this.grid[row][cell] !== 'undefined') {
 		      return this.grid[row][cell];
 		    }
@@ -184,15 +196,17 @@ class Level {
 		}
 		return undefined;
   }
-  
+
   removeActor(actor) {
     const indexActor = this.actors.indexOf(actor);
+    // лучше использовать === и !==
     if (indexActor != -1) {
       this.actors.splice(indexActor, 1);
     }
   }
-  
+
   noMoreActors(type) {
+    // здесь лучше подойдёт метод some
     for (const item of this.actors) {
       if (item.type === type) {
         return false;
@@ -200,16 +214,16 @@ class Level {
     }
     return true;
   }
-  
+
   playerTouched(type, actor) {
     if (this.status !== null) {
       return;
     }
-    
+
     if (type === 'lava' || type === 'fireball') {
       this.status = 'lost';
     }
-    
+
     if (type === 'coin' && actor.type === 'coin') {
       this.removeActor(actor);
       if (this.noMoreActors('coin')) {
@@ -225,25 +239,28 @@ class LevelParser {
   }
 
   actorFromSymbol(symbol) {
+    // эти две проверки можно убрать и ничего не изменится
     if (typeof symbol === 'undefined') {
       return undefined;
     }
 
     if (typeof this.dictionary === 'undefined') {
       return undefined;
-    }    
+    }
     return this.dictionary[symbol];
-  } 
+  }
 
   obstacleFromSymbol(symbol) {
+    // эту проверку можно убрать
     if (typeof symbol === 'undefined') {
       return undefined;
     }
-    
+
     if (symbol === 'x') {
       return 'wall';
     } else if (symbol === '!') {
       return 'lava';
+    // else можно убрать
     } else {
       return undefined;
     }
@@ -252,10 +269,12 @@ class LevelParser {
   createGrid(stringSet) {
     const grid = [];
 
+    // тут можно написать через reduce и map
     for (let i = 0; i < stringSet.length; i++) {
     	const symbolString = stringSet[i].split('');
-      grid[i] = []; 
-      for (let symbol of symbolString) {      	
+      grid[i] = [];
+      for (let symbol of symbolString) {
+        // это дублирование логики obstacleFromSymbol
         if (symbol === 'x' || symbol === '!') {
           grid[i].push(this.obstacleFromSymbol(symbol));
         } else {
@@ -263,7 +282,7 @@ class LevelParser {
         }
       }
     }
-    return grid;    
+    return grid;
   }
 
   createActors(stringSet) {
@@ -272,20 +291,22 @@ class LevelParser {
 
     for (let i = 0; i < stringSet.length; i++) {
     	const symbolString = stringSet[i].split('');
-      for (let k = 0; k < symbolString.length; k++) { 
+      for (let k = 0; k < symbolString.length; k++) {
         const symbol = symbolString[k];
         const actorConstructor = this.actorFromSymbol(symbol);
       	if (typeof actorConstructor === 'function') {
       		const actor = new actorConstructor();
           if (actor instanceof Actor) {
+            // push
             actors[c] = new actorConstructor();
+            // позиция должна задаваться через конструктор
             actors[c].pos = new Vector(k, i);
             c++;
           }
-      	} 
+      	}
       }
     }
-    return actors;    
+    return actors;
   }
 
   parse(stringSet) {
@@ -295,28 +316,28 @@ class LevelParser {
 
  class Fireball extends Actor {
  	constructor(pos = new Vector(0, 0), speed = new Vector(0, 0)) {
- 	  super(pos, new Vector(1, 1), speed); 		
+ 	  super(pos, new Vector(1, 1), speed);
  	}
 
  	get type() {
  		return 'fireball';
  	}
- 	
+
  	getNextPosition(time = 1) {
  	  return this.pos.plus(this.speed.times(time));
  	}
- 	
+
  	handleObstacle() {
  	  this.speed = this.speed.times(-1);
  	}
- 	
+
  	act(time, level) {
  	  const nextPosition = this.getNextPosition(time);
  	  if (level.obstacleAt(nextPosition, this.size)) {
  	    this.handleObstacle();
  	  } else {
  	    this.pos = nextPosition;
- 	  } 	  
+ 	  }
  	}
 }
 
@@ -335,17 +356,19 @@ class VerticalFireball extends Fireball{
 class FireRain extends Fireball{
   constructor(pos = new Vector(1, 1)) {
     super(pos, new Vector(0, 3));
+    // startPos более подходящее название поля
     this.posCreate = pos;
   }
-  
+
   handleObstacle() {
     this.pos = this.posCreate;
-  }  
+  }
 }
 
 class Coin extends Actor {
 	constructor(pos = new Vector(1, 1)) {
 		super(new Vector(pos.x + 0.2, pos.y + 0.1), new Vector(0.6, 0.6));
+		// вроде бы лишнее поле
 		this.posCreate = pos;
 		this.springSpeed = 8;
 		this.springDist = 0.07;
@@ -386,6 +409,7 @@ class Player extends Actor {
 	}
 }
 
+// уровни должны загружаться из файла (см. описание заданияы)
 const schemas = [
   [
     '         ',
@@ -475,7 +499,7 @@ const schemas = [
     "                       ",
     "xxx                    ",
     "                       "
-  ], 
+  ],
   [
     "   v         v",
     "              ",
