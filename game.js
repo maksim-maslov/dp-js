@@ -69,16 +69,9 @@ class Level {
   constructor(grid = [], actors = []) {
     this.grid = grid.slice();
     this.actors = actors.slice();
-    this.player = actors.find((el) => {
-      return el.type === 'player';
-    });
+    this.player = actors.find(el => el.type === 'player');
     this.height = grid.length;
-    this.width = 0;
-    if (grid.length !== 0) {
-      this.width = Math.max(0, ...grid.map((el) => {
-        return el.length;
-      }));
-    }
+    this.width = Math.max(0, ...grid.map(el => el.length));  
     this.status = null;
     this.finishDelay = 1;
   }
@@ -93,9 +86,7 @@ class Level {
     if (!(actor instanceof Actor) || typeof actor === 'undefined') {
       throw new Error('В метод actorAt можно передавать только объект типа Actor');
     }
-    return this.actors.find((el) => {
-      return actor.isIntersect(el);
-    });   
+    return this.actors.find(el => actor.isIntersect(el));   
   }
 
   obstacleAt(pos, size) {
@@ -125,7 +116,6 @@ class Level {
         }       
       }
     }
-    return undefined;
   }
 
   removeActor(actor) {
@@ -136,9 +126,7 @@ class Level {
   }
 
   noMoreActors(type) {
-    return !this.actors.some((el) => {
-      return el.type === type;
-    })
+    return !this.actors.some(el => el.type === type)
   }
 
   playerTouched(type, actor) {
@@ -173,23 +161,11 @@ class LevelParser {
       return 'wall';
     } else if (symbol === '!') {
       return 'lava';
-    } 
-    return undefined;   
+    }
   }
 
   createGrid(stringSet) {
-    return stringSet.map((el) => {
-      return el.split('').reduce((memo, el) => {
-        if (el === 'x') {
-          memo.push('wall');
-        } else if (el === '!') {
-          memo.push('lava');
-        } else {
-          memo.push(undefined);
-        }
-        return memo;
-      }, []);
-    });
+    return stringSet.map(el => el.split('').map(el => this.obstacleFromSymbol(el)));
   }
 
   createActors(stringSet) {
@@ -293,6 +269,7 @@ class Coin extends Actor {
 
   act(time) {
     this.pos = this.getNextPosition(time);
+    console.log(this.pos);
   }
 }
 
