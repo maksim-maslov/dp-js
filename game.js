@@ -192,8 +192,9 @@ class LevelParser {
 }
 
 class Fireball extends Actor {
-  constructor(pos = new Vector(0, 0), speed = new Vector(0, 0)) {
-    super(pos, new Vector(1, 1), speed);
+  constructor(pos, speed) {
+    super(pos);
+    this.speed = speed;
   }
 
   get type() {
@@ -219,21 +220,25 @@ class Fireball extends Actor {
 }
 
 class HorizontalFireball extends Fireball{
-  constructor(pos = new Vector(1, 1)) {
-    super(pos, new Vector(2, 0));
+  constructor(pos) {
+    super(pos);
+    this.speed = new Vector(2, 0);
   }
 }
 
 class VerticalFireball extends Fireball{
-  constructor(pos = new Vector(1, 1)) {
-    super(pos, new Vector(0, 2));
+  constructor(pos) {
+    super(pos);
+    this.speed = new Vector(0, 2);
   }
 }
 
 class FireRain extends Fireball{
-  constructor(pos = new Vector(1, 1)) {
-    super(pos, new Vector(0, 3));
+  constructor(pos) {
+    super(pos);    
+    this.speed = new Vector(0, 3);
     this.startPos = pos;
+
   }
 
   handleObstacle() {
@@ -242,7 +247,7 @@ class FireRain extends Fireball{
 }
 
 class Coin extends Actor {
-  constructor(pos = new Vector(0, 0)) {
+  constructor(pos) {
     super(pos);    
     this.pos = this.pos.plus(new Vector(0.2, 0.1));
     this.size = new Vector(0.6, 0.6);
