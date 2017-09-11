@@ -149,7 +149,7 @@ class Level {
 
 class LevelParser {
   constructor(dictionary = {}) {
-    this.dictionary = dictionary;
+    this.dictionary = Object.assign({}, dictionary);
   }
 
   actorFromSymbol(symbol) {
@@ -244,9 +244,7 @@ class FireRain extends Fireball{
 
 class Coin extends Actor {
   constructor(pos = new Vector(0, 0)) {
-    super(pos);    
-    this.pos = this.pos.plus(new Vector(0.2, 0.1));
-    this.size = new Vector(0.6, 0.6);
+    super(pos.plus(new Vector(0.2, 0.1)), new Vector(0.6, 0.6));
     this.startPos = new Vector(this.pos.x, this.pos.y);
     this.springSpeed = 8;
     this.springDist = 0.07;
